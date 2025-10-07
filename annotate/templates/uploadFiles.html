@@ -1,0 +1,109 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+          crossorigin="anonymous">
+    
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <title>ScribeArabic</title>
+</head>
+<body>
+<div class="container">
+    <h4 class="text-center" id="headingText">Loading version ...</h4>
+    <h5 class="text-left" id="welcomeText">Welcome</h4>
+    <p class="text-left" id="userStatisticText"> </p>
+    
+    <br> 
+    <form class="row g-3 top-buffer" method="post" enctype="multipart/form-data" id="uploadForm" action="">
+        {% csrf_token %}
+        
+        <div class="row">
+            <div class="col">
+                <button id="annotateButton" onclick="submitForm(1)">Annotate Files</button>
+                <br> <br> 
+                <p>OR</p>
+                <input type="file" name="files" accept=".jpg" id="fileDialog" onchange="showSelectedFiles()" multiple>
+                
+                <button id="uploadButton" disabled type="submit"  onclick="submitForm(1)">Upload and Annotate</button>
+                
+                <input id="jobSelected" type="hidden" name="job" value="{{user}}"/>    
+                <input id="formInputId" type="hidden" name="formInput" value=""/>    
+                <br>
+            </div>
+        </div>
+        <br><br>
+    
+    </form>
+
+    
+    <div class="row">
+        <div class="col">
+            <label for="selectedFiles" disabled>Selected files: </label>
+            <br><br>
+            <select id="selectedFiles" multiple disabled></select>
+        </div>
+    </div>
+    <br><br>
+
+
+    
+    <div class="row top-buffer">
+        <div class="col">
+
+            <label for="errorLogs" class="form-label" disabled> Error Logs. Not uploaded: </label><br>
+            <select class="form-select" id="errorLogs" multiple ></select>
+        </div>
+        <div class="col text-center">        
+            <label for="logs" disabled>Uploaded successfully: </label><br>
+            <select class="form-select" id="logs" multiple></select>
+        </div>    
+    </div>
+
+    </div>
+    <script src="{% static 'uploadFiles.js' %}"></script>
+    <script>
+        
+        
+        
+        let HEADING = "{{heading}}";
+        let NOT_DONE = {{not_done|safe}}
+        let DONE = {{done|safe}}
+        let ERROR = {{error|safe}}[0];
+        let JOB_FOLDER = {{job_folder|safe}};
+        let MAX_FILES = {{file_limit}};
+        let FILE_SIZE_LIMIT = {{file_max_size}};
+        let USER = "{{user}}";
+        let TOTAL_USER_FILES = {{total_user_files}};
+        let TOTAL_TO_ANNOTATE = {{total_files_to_annotate}};
+        
+        
+        window.onload = function() {
+        headingText.innerHTML = HEADING;
+        welcomeText.innerHTML = 'Welcome ' + USER 
+       
+        let userString = 'You can annotate ' + TOTAL_TO_ANNOTATE + ' existing files, or ' + 
+                         'upload ' + MAX_FILES + ' files (jpg format) today. ';
+            
+            
+        userStatisticText.textContent = userString;
+        let fileDialog = document.getElementById("fileDialog");
+        //fileDialog.addEventListener("change", showSelectedFiles);    
+        
+        if (MAX_FILES <= 0) {
+            fileDialog.disabled = true;
+        }
+            
+        if (TOTAL_TO_ANNOTATE <= 0) {
+            document.getElementById("annotateButton").disabled = true;
+        }
+            
+        
+        displayErrors(NOT_DONE, ERROR);
+        displayDone(DONE);
+    }
+    </script>    
+</body>
+</html>

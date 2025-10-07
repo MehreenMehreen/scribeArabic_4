@@ -1,0 +1,12 @@
+<h1>{{ heading }}</h1>
+<h2>Welcome!</h2>
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Login</button>
+</form>
+
+
+
+<a href="{% url 'password_reset' %}">Forgot Password</a>
+

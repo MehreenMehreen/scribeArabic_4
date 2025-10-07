@@ -1,0 +1,35 @@
+# User names
+# Make directories in settings.DATASET_ROOT/datasets folder with the same names
+user_list: ['akram', 'carlos', 'georges', 'mehreen']
+# for tags
+tag_dictionary: { 
+                  'Region_paragraph': 'rgba(20, 250, 20, 0.1)', #red
+                  'Region_heading': 'rgba(255, 102, 255, 0.1)', #pink
+                  'Region_advert': 'rgba(255, 255, 0, 0.1)', # yellow 
+                  'Region_advert_head': 'rgba(242, 103, 10, 0.1)', # orange 
+                  'Region_letterhead': 'rgba(20, 20, 250, 0.1)', #blue
+                  'Region_image': 'rgba(0, 255, 255, 0.1)',   #cyan 
+                  'Region_page_no': 'rgba(128, 128, 128, 0.1)',   #gray 
+                  'Region_header': 'rgba(0, 0, 255, 0.1)', #green 
+                  'Region_footer': 'rgba(0, 0, 255, 0.1)', #green
+                  'Orient_top_bottom': 'rgba(128, 200, 28, 0.1)', 
+                  'Orient_bottom_top': 'rgba(128, 200, 28, 0.1)'
+                } 
+                
+                
+user_fullnames: {'evleen': 'Evleen Jabbour', 'akram': 'Akram Khater', 'mehreen': 'Mehreen Saeed', 'nasrallah':'SFR', 'carlos': 'Carlos Younes', 'georges': 'Georges Habchi'}
+textbox_ht: 50 #If zero it will be equal to annotation ht
+HTR: {'show_HTR' : True,'use_celery':True, 
+      'config_file': 'ArabicOCR/model/trial_31_A/set0/config_3100.yaml',
+      'sfr_path': 'ArabicOCR/', 
+      'models': {'SFR-Arabic': {'path': 'ArabicOCR/'}, 
+                 'HATFormer':  {'path': 'HATFormer/', 'model_path': 'HATFormer/trial_31_A_set0'}
+                 }
+     }
+user_dict: {'mehreen': {'show_submit': 'false', 'home_screen': 'upload'}, 
+        'carlos': {'show_submit': 'true', 'home_screen': 'starttagging'},
+        'georges': {'show_submit': 'true', 'home_screen': 'starttagging'},
+        'akram': {'show_submit': 'false', 'home_screen': 'upload'}
+        }
+upload_file_limit_per_day: 5
+file_max_size: 2097152
