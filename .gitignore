@@ -1,0 +1,11 @@
+*.bk
+*.old
+*.important
+**/.ipynb_checkpoints/
+**/__pycache__/
+*.txt
+*.jpg
+db.sqlite3
+dump.rdb
+*.text
+annotate/static/user_data/
