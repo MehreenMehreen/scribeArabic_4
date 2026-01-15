@@ -255,6 +255,7 @@ class transcribeBlock extends manuscriptPage {
     if (TEXTBOX_HT == 0) {
         ht = (maxY-minY) + 'px';
         angle = 0;
+        vertical = false;
     }
   	var input = document.createElement('textarea');
 		input.rows = 1;
@@ -273,13 +274,16 @@ class transcribeBlock extends manuscriptPage {
 		input.style.position = 'absolute';
 		input.style.left = canvasRect.left + window.scrollX + minX + 'px';
 		input.style.top = canvasRect.top + window.scrollY + start_y - 25 + 'px';
-        if (TEXTBOX_HT == 0) input.style.top = canvasRect.top + window.scrollY + minY + 'px'
+        if (TEXTBOX_HT == 0) {
+            input.style.top = canvasRect.top + window.scrollY + minY + 'px';
+            input.style.width = (maxX-minX) + 'px';
+            }
 		input.style.height = ht; 
 		input.setAttribute('lang', 'ar');
 		input.setAttribute('dir', 'rtl');
         let relative_y = 100;
         let relative_x = 100;
-        if ((maxX-minX) < (maxY-minY)) {
+        if ((maxX-minX) < (maxY-minY) && (TEXTBOX_HT != 0)) {
             relative_x=100;relative_y = 0;
             let avgX = parseInt((maxX + minX)/2)
             // Place the textbox so that right corner is at maxX...so need to adjust left according to
@@ -325,7 +329,7 @@ class transcribeBlock extends manuscriptPage {
   		vertical = false;
   		[minX, minY, maxX, maxY] = this.lineArray[i].getCornerPts();
   		var [angle, start_y] = this.lineArray[i].getLineAngle_y();
-  		if (this.lineArray[i].isVerticalOrientation()) {
+  		if (this.lineArray[i].isVerticalOrientation() && TEXTBOX_HT!=0) {
   			vertical = true;
   			if (this.lineArray[i].isVerticalTopDown()){
   				angle = -90;
@@ -695,7 +699,7 @@ class transcribeBlock extends manuscriptPage {
 		}
 		let index = this.textBoxMap.get(textElement);
         
-        if (this.lineArray[index].isNearVertical) {
+        if (this.lineArray[index].isNearVertical && TEXTBOX_HT!=0) {
             textElement.style.transformOrigin = "100% 0%";
 			textElement.style.transform = "rotate("+this.lineArray[index].angle+"deg)";
             this.lineRotated = false

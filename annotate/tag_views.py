@@ -50,13 +50,15 @@ def login_view(request):
 def get_textbox_ht():
     config_file = os.path.join(settings.DATASET_ROOT, settings.CONFIG_FILE)
     if not os.path.exists(config_file):
+        
         return 50
     with open(config_file) as fin:
         config = yaml.safe_load(fin)
     
-    textbox_ht = 50
+    textbox_ht = 50 
     if 'textbox_ht' in config:
         textbox_ht = config['textbox_ht']
+    
     
     return textbox_ht
     
@@ -116,9 +118,9 @@ def show_directory(request):
     dir = directories()
     user_dataset_path = get_dataset_path(request)
     directory = os.path.join(settings.DATASET_ROOT, user_dataset_path)
-    print('directory1', directory)
+    #print('directory1', directory)
     dir_obj = dir.load_directories(directory, task="tag", user=request.user.name, include_submitted=True)
-    print('dir_obj', dir_obj)
+    #print('dir_obj', dir_obj)
     dir_json = json.dumps(dir_obj)
     # IS this a QA session ...
     checking_flag = request.session.get('checkingMenu', 0)
@@ -174,7 +176,7 @@ def show_directory(request):
                 directory = os.path.join(settings.DATASET_ROOT, user_dataset_path)
                 path_to_add = user_dataset_path
 
-                print('directory is', directory)
+                #print('directory is', directory)
                 dir_obj = dir.load_directories(directory, task="tag", user=user_name,
                                                             include_submitted=True)
                 dir_json = json.dumps(dir_obj)

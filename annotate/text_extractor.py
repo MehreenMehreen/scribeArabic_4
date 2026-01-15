@@ -111,7 +111,7 @@ class ScribeArabicPolygon:
         angle = 0.5 * math.atan2(2 * Sxy, Sxx - Syy)
         return math.degrees(angle)
     
-    def is_near_vertical(self, thresh=15):
+    def is_near_vertical(self, thresh=10):
         if self.is_vertical is not None:
             return self.is_vertical
         
@@ -119,6 +119,7 @@ class ScribeArabicPolygon:
             self.angle = self.polygon_orientation(self.tuple_list)
             
         if abs(self.angle) <= 90 + thresh and abs(self.angle) >= 90 - thresh:
+            print('angle', self.angle)
             self.is_vertical = True
             return True
         self.is_vertical = False
@@ -128,9 +129,11 @@ class ScribeArabicPolygon:
         center = np.mean(self.tuple_list, axis=0)
         return center
     
-    def get_x_y(self):
-        x_list = [x[0] for x in self.tuple_list]
-        y_list = [y[1] for y in self.tuple_list]
+    def get_x_y(self, pts=None):
+        if pts is None:
+            pts = self.tuple_list
+        x_list = [x[0] for x in pts]
+        y_list = [y[1] for y in pts]
         return x_list, y_list
     
     
@@ -138,16 +141,17 @@ class ScribeArabicPolygon:
     def get_baseline_regression(self, poly_pts, num_pts=10, deg=1):
         if len(poly_pts) <= 4:
             deg = 1
-        x, y = self.get_x_y()
+        x, y = self.get_x_y(poly_pts)
         model = (np.polyfit(x, y, deg))
         p = np.poly1d(model)
         # get the x against which we want y
         x1, y1, x2, y2 = self.get_max_min_polygon(poly_pts)
         num_pts = min(num_pts, x2-x1+1)
         num_pts = int(num_pts)
-        x = np.linspace(x1, x2, num_pts, endpoint=True, dtype=int)
-        y = p(x)
-        baseline = [(a, b) for a,b in zip(x, y)]
+        x2 = np.linspace(x1, x2, num_pts, endpoint=True, dtype=int)
+        y2 = p(x2)
+        baseline = [(a, b) for a,b in zip(x2, y2)]
+        
         return baseline
     
         # assuming poly_pts is a list of (x,y) tuples
@@ -176,7 +180,7 @@ class ScribeArabicPolygon:
     
     
         # Chunks_len ignored if chunk_len_auto is True
-    def get_baseline_chunks(self, poly_pts, chunks_len=300, chunk_len_auto=True):
+    def get_baseline_chunks(self, poly_pts, chunks_len=300, chunk_len_auto=True, printp1=False):
         
         
         baseline = []
@@ -199,11 +203,18 @@ class ScribeArabicPolygon:
         #print('expanded len', len(poly_pts), 'total chunks', total_chunks)
         for i in range(1, total_chunks+1):
             p1 = [pt for pt in p if (pt[0]-min_x)>=(i-1)*chunks_len and (pt[0]-min_x)<i*chunks_len]
-            #print(p1)
+
+
             if i == total_chunks:
                 p1 = [pt for pt in p if (pt[0] - min_x)>=(i-1)*chunks_len]
             b = self.get_baseline_regression(p1, num_pts=12)
 
+            max_x1, max_y1 = np.max(p1, 0)
+            min_x1, min_y1 = np.min(p1, 0)
+            
+            if printp1:
+                print(max_x1, max_y1, min_x1, min_y1, b)
+            
             # Points are in ascending order (increasing x - left to right) 
             if len(baseline) != 0:
                 # This will smooth out the line
@@ -235,8 +246,9 @@ class ScribeArabicPolygon:
         if is_vertical:
             # First reverse coords
             poly = [(y, x) for (x, y) in poly_points]
-            baseline = self.get_baseline_chunks(poly)
-            # reverse again
+            baseline = self.get_baseline_chunks(poly, printp1=False)
+ 
+            # reverse coords again
             baseline = [(x, y) for (y, x) in baseline]
 
         else:
@@ -245,7 +257,13 @@ class ScribeArabicPolygon:
         if (is_vertical and top_down) or upside_down:
             baseline = baseline[::-1]    
 
+        
         return baseline, is_vertical
+        
+
+         
+            
+        
         
 # For saving to json
 class myEncoder(json.JSONEncoder):
@@ -270,7 +288,7 @@ class myEncoder(json.JSONEncoder):
 # If a set of lines is vertical, sorting would be: first horizontal lines, then vertical right to left 
 
 class ScribeArabicTextExtractor:
-    def __init__(self, image_json=None, json_file=None):
+    def __init__(self, image_json=None, json_file=None, image_size=(0,0)):
         if image_json is None:
             assert os.path.exists(json_file)
             with open(json_file) as fin:
@@ -281,6 +299,8 @@ class ScribeArabicTextExtractor:
         self.region_dict = dict()
         self.line_dict = dict()
         self.region_type_dict =dict()
+        if 'image_size' not in self.json:
+            self.json['image_size'] = {'width': image_size[0], 'height': image_size[1]}
         self.size = [self.json['image_size']['width'], self.json['image_size']['height']]
         self.sorted_json = dict()
         
@@ -362,6 +382,19 @@ class ScribeArabicTextExtractor:
             bottom_up = 1
 
         return upside_down, bottom_up
+    
+    def check_top_down(self, line_data):
+        
+        if not "tags" in line_data:
+            return 0
+
+        # Check if its upside down or bottom up
+        top_down = 0
+        if line_data["tags"].get("Orient_top_bottom", 0) == 1:
+            print("returning top_bottom as 1")
+            top_down = 1
+
+        return top_down
 
     def assign_orientation_to_lines(self):
         for line_id in self.line_dict:
@@ -376,12 +409,17 @@ class ScribeArabicTextExtractor:
                                                                                     )   
             # convert to int
             self.json[line_id]['is_vertical'] = 1 if self.json[line_id]['is_vertical'] else 0
+            #if self.json[line_id]['is_vertical'] == 1:
+            #    print('vertical', line_id)
+                
              
     # Assign is_vertical, upside_down and bottom_up to a region if two or more lines are this way 
     def assign_orientation_to_regions(self):
         # This dict will count
         field_dict = {"is_vertical": 0, "upside_down": 0, "bottom_up": 0}
         for region_id, region_data in self.region_dict.items():
+            region_upside_down, region_bottom_up = self.check_tags(self.json[region_id]) if region_id in self.json else (0, 0)
+            region_top_down = self.check_top_down(self.json[region_id]) if region_id in self.json else 0
             lines = region_data['lines']
              # Make a copy
             region_field_dict = {k: v for k, v in field_dict.items()}
@@ -391,12 +429,21 @@ class ScribeArabicTextExtractor:
                          region_field_dict[k] += 1
              
              
-             # Assign to region
+             # Assign to region if majority lines have that attribute
+            total_lines = float(len(lines))
+            
             for k, v in region_field_dict.items():
-                if (v == 1 and len(region_data['lines']) == 1) or v >= 2:
+                ratio_lines = v/total_lines if total_lines > 0 else 0
+                if (v == 1 and len(region_data['lines']) == 1) or ratio_lines >= 0.6:
+                    print('assigning vertical', v/total_lines)
                     region_data[k] = 1
                 else:
                     region_data[k] = 0
+            
+            # if region has overall orientation set to vertical then make it vertical regardless of what the lines are
+            if region_top_down == 1 or region_bottom_up == 1:
+                print('assigning bec of uiversal region')
+                region_data["is_vertical"] = 1
              
              
     def sort_all(self):
@@ -439,8 +486,13 @@ class ScribeArabicTextExtractor:
             # baselines are reversed so take last one
             line_starts = [self.json[line]['baseline'][-1] for line in self.region_dict[region_key]['lines']]
             if region_data["is_vertical"] == 1:
-                # Sort left to right, top to bottom
-                sorted_starts = sorted(enumerate(line_starts), key=lambda x: (x[1][0], x[1][1]))
+                if region_data["bottom_up"] == 1:
+                    # Sort right to left, top to bottom
+                    sorted_starts = sorted(enumerate(line_starts), key=lambda x: (-x[1][0], x[1][1]))
+                else:
+                    # Sort left to right, top to bottom
+                    sorted_starts = sorted(enumerate(line_starts), key=lambda x: (x[1][0], x[1][1]))
+                #print(sorted_starts)
             elif region_data["upside_down"] == 1:
                 # Sort bottom to top, left to right
                 sorted_starts = sorted(enumerate(line_starts), key=lambda x: (-x[1][1], x[1][0]))
@@ -523,6 +575,7 @@ class ScribeArabicTextExtractor:
             for region_id in region_list:
                 region_text = []
                 for line_id in self.region_dict[region_id]["lines"]:
+                    #print(line_id)
                     line_text = self.json[line_id].get("text", "")
                     if len(line_text) > 0 and line_text != "None":
                         region_text.append(line_text)

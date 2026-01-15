@@ -85,7 +85,7 @@ class textLine {
     }
   }
 
-  createCopy(copyAttributes=false, copyTags=false) {
+  createCopy(copyAttributes=false, copyAllTags=false) {
     let p = new Array();
     for (let i=0;i<this.ptsArray.length;++i)
       p.push(new myPoint(this.ptsArray[i].x, this.ptsArray[i].y))
@@ -108,7 +108,7 @@ class textLine {
       newLine.angle = this.angle;
       newLine.isNearVertical = this.isNearVertical;
     }
-    if (copyTags || copyAttributes) {
+    if (copyAllTags || copyAttributes) {
       //Should have exactly the same tags
       newLine.tagDict = {};
       //copy tag dictionary

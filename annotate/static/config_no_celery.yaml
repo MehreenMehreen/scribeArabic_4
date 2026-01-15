@@ -19,7 +19,7 @@ tag_dictionary: {
                 
                 
 user_fullnames: {'evleen': 'Evleen Jabbour', 'akram': 'Akram Khater', 'mehreen': 'Mehreen Saeed', 'nasrallah':'SFR', 'carlos': 'Carlos Younes', 'georges': 'Georges Habchi'}
-textbox_ht: 50 #If zero it will be equal to annotation ht
+textbox_ht: 0 #If zero it will be equal to annotation ht
 HTR: {'show_HTR' : True,'use_celery':False, 
       'config_file': 'model/trial_39_A/set0/config_3900_no_celery.yaml',
       'sfr_path': 'ArabicOCR/', 
@@ -33,4 +33,4 @@ user_dict: {'mehreen': {'show_submit': 'false', 'home_screen': 'upload'},
         'akram': {'show_submit': 'false', 'home_screen': 'upload'}
         }
 upload_file_limit_per_day: 5
-file_max_size: 2097152
+file_max_size: 10097152

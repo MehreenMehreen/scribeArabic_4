@@ -18,7 +18,7 @@ tag_dictionary: {
                 
                 
 user_fullnames: {'evleen': 'Evleen Jabbour', 'akram': 'Akram Khater', 'mehreen': 'Mehreen Saeed', 'nasrallah':'SFR', 'carlos': 'Carlos Younes', 'georges': 'Georges Habchi'}
-textbox_ht: 50 #If zero it will be equal to annotation ht
+textbox_ht: 0 #If zero it will be equal to annotation ht
 HTR: {'show_HTR' : True, 'use_celery': False, 
       'config_file': 'model/trial_31_A/set0/config_3100.yaml',
       'sfr_path': 'ArabicOCR/', 
