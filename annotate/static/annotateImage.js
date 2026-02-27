@@ -675,11 +675,12 @@ class textLine {
 }
 
 class manuscriptPage{
-  constructor(imageWidth, canvasId="imgCanvas", imageId="manuscript"){
+  constructor(imageWidth, canvasId="imgCanvas", imageId="manuscript", jsonImgDim=[0,0]){
     this.canvas = document.getElementById(canvasId);
     this.manuscriptImage = document.getElementById(imageId);
     this.imageDim = 0; //fill this in displayManuscript()
     this.displayedImageDim = 0; //fill this in displayManuscript()
+    this.jsonImageDim = new myPoint(jsonImgDim[0], jsonImgDim[1]);
     this.displayManuscript(imageWidth);
     this.json = "";
     // for each displayed line
@@ -727,7 +728,12 @@ class manuscriptPage{
     ctx.filter = `contrast(${this.contrastValue}%)`;  
     ctx.drawImage(this.manuscriptImage, 0, 0, imageWidth, height);
     ctx.filter = "none";  
-    this.imageDim = new myPoint(this.manuscriptImage.naturalWidth, this.manuscriptImage.naturalHeight);
+    if (this.jsonImageDim.x == 0 || this.jsonImageDim.y == 0) {
+        this.imageDim = new myPoint(this.manuscriptImage.naturalWidth, this.manuscriptImage.naturalHeight);
+    }
+    else {
+        this.imageDim = new myPoint(this.jsonImageDim.x, this.jsonImageDim.y)
+    }
     this.displayedImageDim = new myPoint(imageWidth, height);
 
   }
@@ -889,7 +895,7 @@ class manuscriptPage{
   getSelectedLineIndex(ctx, x, y) {
     for (let i = 0;i < this.lineArray.length; ++i){
       //Do not show the invisible lines
-      if (this.lineArray[i].isRegion() && !this.showRegions){
+      if (this.lineArray[i].isRegion() && !this.showRegions && this.lineArray[i].text.length==0){
           continue
       }
       const isPointInPoly = this.lineArray[i].isPointInPath(ctx, x, y);
@@ -909,7 +915,7 @@ class manuscriptPage{
       const isPointInPoly = this.lineArray[i].isPointInPath(ctx, x, y);
       if (isPointInPoly) {
           ctx.fillStyle = MOVE_STYLE;
-          if (!this.lineArray[i].isRegion() || this.showRegions) 
+          if (!this.lineArray[i].isRegion() || this.showRegions || this.lineArray[i].text.length>0) 
               this.lineArray[i].fill(ctx);
           this.lineArray[i].stroke(ctx);   
       }    

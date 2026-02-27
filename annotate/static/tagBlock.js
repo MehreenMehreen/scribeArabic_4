@@ -36,8 +36,8 @@ let TEXTBOX_HT = "50px"
 
 //This class handles all the markings
 class annotateBlock extends manuscriptPage {
-	constructor(imageWidth, canvasId="imgCanvas", imageId="manuscript") {
-    super(imageWidth, canvasId, imageId);
+	constructor(imageWidth, canvasId="imgCanvas", imageId="manuscript", jsonImgDims=[0, 0]) {
+    super(imageWidth, canvasId, imageId, jsonImgDims);
     //has index of line being changed
     this.lineChanging = -1;
     this.zoomOn = false;
@@ -235,8 +235,8 @@ class annotateBlock extends manuscriptPage {
 
 //This class handles all the textboxes
 class transcribeBlock extends manuscriptPage {
-  constructor(imageWidth, canvasId="imgCanvas", imageId="manuscript") {
-    super(imageWidth, canvasId, imageId);
+  constructor(imageWidth, canvasId="imgCanvas", imageId="manuscript", jsonImgDims=[0, 0]) {
+    super(imageWidth, canvasId, imageId, jsonImgDims);
   	this.textBoxArray = 0;  
   	// This holds a map of all textboxes that link them to an index
   	// The index is the associated lineArray
@@ -407,7 +407,8 @@ class transcribeBlock extends manuscriptPage {
     if (this.showRegions) taggedStyle = "visible"; else taggedStyle = "hidden"  ;
     for (var i=0;i<this.lineArray.length;++i)
     {
-        if (this.lineArray[i].isRegion()) {
+        //toggle only if length of text == 0 (no text in box)
+        if (this.lineArray[i].isRegion() && this.lineArray[i].text.length == 0) {
             this.textBoxArray[i].style.visibility = taggedStyle;
         }
     }
@@ -487,7 +488,7 @@ class transcribeBlock extends manuscriptPage {
     if (this.showRegions) taggedStyle = "visible"; else taggedStyle = "hidden"  ;
     for (var i=0;i<this.lineArray.length;++i)
     {
-        if (this.lineArray[i].isRegion()) {
+        if (this.lineArray[i].isRegion() && this.lineArray[i].text.length == 0) {
             this.textBoxArray[i].style.visibility = taggedStyle;
         }
     }  
@@ -509,6 +510,8 @@ class transcribeBlock extends manuscriptPage {
     // Find an untagged line to display
     for (let i=0; i<this.lineArray.length;++i) {  
         this.selectedIndex = (this.selectedIndex + 1) % this.lineArray.length;
+        if (this.lineArray[this.selectedIndex].text.length > 0)
+            break
         if (this.showRegions || !this.lineArray[this.selectedIndex].isRegion())
             break
     }
@@ -778,8 +781,8 @@ class transcribeBlock extends manuscriptPage {
 
 // This class has line annotations + buttons for marking/tagging regions
 class tagBlock extends annotateBlock {
-  constructor(imageWidth, canvasId="imgCanvas", imageId="manuscript") {
-    super(imageWidth, canvasId, imageId);
+  constructor(imageWidth, canvasId="imgCanvas", imageId="manuscript", jsonImgDims=[0, 0]) {
+    super(imageWidth, canvasId, imageId, jsonImgDims);
   	this.tagButtonArray = 0;  
   	// This holds a map of all buttons that link them to an index
   	// The index is for the associated lineArray
@@ -1168,7 +1171,7 @@ pasteClicked() {
     ctx.save();
     //we may have more than one selected
     for (let i = 0;i < this.lineArray.length; ++i){
-      if (this.lineArray[i].isRegion() && !this.showRegions)
+      if (this.lineArray[i].isRegion() && !this.showRegions && this.lineArray[i].text.length == 0)
           continue;
       const isPointInPoly = this.lineArray[i].isPointInPath(ctx, x, y);
       if (isPointInPoly) {
@@ -1223,7 +1226,8 @@ pasteClicked() {
       // First check if region shoujld be filled
       var tagged = this.lineArray[i].isTagged();
       var isRegion = this.lineArray[i].isRegion();
-      if ((isRegion && this.showRegions) || (!isRegion && tagged)) {
+      var txtLengthZero = this.lineArray[i].text.length == 0
+      if ((isRegion && this.showRegions) || (!isRegion && tagged) || (isRegion && !txtLengthZero)) {
           this.changeTaggedLineRegionColors(ctx, i);
 
       }
@@ -1329,6 +1333,7 @@ function initPage(leftImg, rightImg, jsonObj){
   }
 
 	JSON_OBJ = jsonObj;
+    
 	// Set the image labels
 	document.getElementById("leftImageName").innerHTML = leftImg;
 	document.getElementById("rightImageName").innerHTML = rightImg;
@@ -1340,8 +1345,9 @@ function initPage(leftImg, rightImg, jsonObj){
 	
 	//Creat the left and right page
 	let widthImg = getImageWidth();
-	LEFT_PAGE = new transcribeBlock(widthImg, "leftCanvas", "leftSideImage");
-	RIGHT_PAGE = new tagBlock(widthImg, "rightCanvas", "rightSideImage");
+    let jsonImgDim = getImageDimensionFromJson(jsonObj[jsonObj.fileList[0]]['json'])
+	LEFT_PAGE = new transcribeBlock(widthImg, "leftCanvas", "leftSideImage", jsonImgDim);
+	RIGHT_PAGE = new tagBlock(widthImg, "rightCanvas", "rightSideImage", jsonImgDim);
 
 	//Set the select options
 	fill_select_json_files(jsonObj);
@@ -1368,6 +1374,20 @@ function initPage(leftImg, rightImg, jsonObj){
   }
   
 }
+
+function getImageDimensionFromJson(jsonObj) {
+    let imageDim = [0, 0]; 
+    if ('image_size' in jsonObj && 'width' in jsonObj['image_size'] && 'height' in jsonObj['image_size']) {
+        let ht = jsonObj['image_size']['height'];
+        let width = jsonObj['image_size']['width'];
+        
+        if (ht > 0 && width > 0)
+            imageDim = [width, ht];
+        
+    }
+    return imageDim
+}
+
 
 function addEventListeners() {
 	rightCanvas = document.getElementById("rightCanvas");
