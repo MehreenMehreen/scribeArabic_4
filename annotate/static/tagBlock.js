@@ -279,8 +279,8 @@ class transcribeBlock extends manuscriptPage {
             input.style.width = (maxX-minX) + 'px';
             }
 		input.style.height = ht; 
-		input.setAttribute('lang', 'ar');
-		input.setAttribute('dir', 'rtl');
+		//input.setAttribute('lang', 'ar');
+		input.setAttribute('dir', 'auto');
         let relative_y = 100;
         let relative_x = 100;
         if ((maxX-minX) < (maxY-minY) && (TEXTBOX_HT != 0)) {
@@ -415,8 +415,9 @@ class transcribeBlock extends manuscriptPage {
   }
 
   loadTextBoxes() {
-      for (var i=0;i < this.textBoxArray.length;++i)
+      for (var i=0;i < this.textBoxArray.length;++i) {
           this.textBoxArray[i].value = this.lineArray[i].text;
+      }
   }
     
     
@@ -1416,8 +1417,8 @@ function addEventListeners() {
 function getImageWidth() {
 	let widthLeft = leftCanvas.getBoundingClientRect().width;
 	let widthRight = rightCanvas.getBoundingClientRect().width;
-	if (widthLeft != widthRight)
-		alert("widths are not equal");
+	//if (widthLeft != widthRight)
+	//	alert("widths are not equal");
 	return Math.min(widthLeft, widthRight);
 }
 

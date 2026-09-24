@@ -19,9 +19,9 @@ tag_dictionary: {
                 
                 
 user_fullnames: {'evleen': 'Evleen Jabbour', 'akram': 'Akram Khater', 'mehreen': 'Mehreen Saeed', 'nasrallah':'SFR', 'carlos': 'Carlos Younes', 'georges': 'Georges Habchi'}
-textbox_ht: 0 #If zero it will be equal to annotation ht
+textbox_ht: 50 #If zero it will be equal to annotation ht
 HTR: {'show_HTR' : True,'use_celery':False, 
-      'config_file': 'model/trial_39_A/set0/config_3900_no_celery.yaml',
+      'config_file': 'model/trial_50_A/set0/config_5000_no_celery.yaml',
       'sfr_path': 'ArabicOCR/', 
       'models': {'SFR-Arabic': {'path': 'ArabicOCR/'}, 
                  'HATFormer':  {'path': 'HATFormer/', 'model_path': 'trial_31_A_set0'}
