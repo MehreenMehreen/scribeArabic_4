@@ -21,7 +21,7 @@ import time
 import argparse
 import yaml
 from utils.continuous_state import init_model
-
+import text_extractor
 
 torch.multiprocessing.set_sharing_strategy('file_system')
 
@@ -73,11 +73,12 @@ def get_hw(config_file, device="cuda"):
     idx_to_char = test_hw.load_char_set(config['network']['hw']['char_set_path'])
     
     
-    if 'pretraining' in config and 'hw_to_save' in config['pretraining'].keys():
-        pt_file = config['pretraining']['hw_to_save']
+    if 'pretraining' in config:
+        pt_file = 'hw.pt'
+        pt_filename = os.path.join(config['pretraining']['snapshot_path'], pt_file)
     else:
         pt_file = 'hw.pt'
-    pt_filename = os.path.join(config['snapshot_path'], pt_file)
+        pt_filename = os.path.join(config['snapshot_path'], pt_file)
 
     config["network"]["hw"]["num_of_outputs"] = len(idx_to_char) + 1
         
@@ -278,8 +279,10 @@ def hw_one_file(img_file, config_file, json_obj, model_mode="pretrain", line_key
         json_obj[line]['text'] = line_text_logical_order       
         
     json_obj = sort_lines(json_obj)
-    torch.cuda.empty_cache()
-    return json_obj
+    extractor = text_extractor.ScribeArabicTextExtractor(image_json=json_obj)
+    sorted_json = extractor.get_sorted_json()
+    
+    return sorted_json
 
    
         

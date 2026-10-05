@@ -9,3 +9,4 @@ db.sqlite3
 dump.rdb
 *.text
 annotate/static/user_data/
+add_user.py
